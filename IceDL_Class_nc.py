@@ -177,22 +177,39 @@ class IceDL(object):
             print('fMSE = ', self.sess.run(fMSE))
             print('fMAE=', self.sess.run(fMAE) * 100)
             if config.save_netcdf:
-                # for k in range(predarray.shape[0]):
-                path = "%s_%s" % (
-                    self.name, self.specifications)
+                if config.make_group :
+                    # for k in range(predarray.shape[0]):
+                    path = "%s_%s"% (self.name, self.specifications)
 
-                file = nc.Dataset(config.result_fold + path + '.nc', mode='w')
-                file.createDimension("x", size=50)
-                file.createDimension("y", size=50)
-                file.createDimension("t", size=20)
-                for k in range(predarray.shape[0]):
-                    label = file.createVariable("/labels" "/label_thk" + str(k), Ylabel_test0.dtype, ('t', 'x', 'y'))
-                    label[:] = Ylabel_test0[k, :, :, :, 0]
-                    prednc = file.createVariable("/preds/" + "pred_thk" + str(k), predarray.dtype, ('t', 'x', 'y'))
-                    prednc[:] = predarray[k, :, :, :]
-                    difference=file.createVariable("/difference/" + "diff-thk" + str(k), predarray.dtype, ('t', 'x', 'y'))
-                    difference[:]=predarray[k,:,:,:]-Ylabel_test0[k, :, :, :, 0]
-                file.close()
+                    file = nc.Dataset(config.result_fold + path + '.nc', mode='w')
+                    file.createDimension("x", size=50)
+                    file.createDimension("y", size=50)
+                    file.createDimension("t", size=20)
+                    for k in range(predarray.shape[0]):
+                        label = file.createVariable("/labels" "/label_thk" + str(k), Ylabel_test0.dtype, ('t', 'x', 'y'))
+                        label[:] = Ylabel_test0[k, :, :, :, 0]
+                        prednc = file.createVariable("/preds/" + "pred_thk" + str(k), predarray.dtype, ('t', 'x', 'y'))
+                        prednc[:] = predarray[k, :, :, :]
+                        difference=file.createVariable("/difference/" + "diff-thk" + str(k), predarray.dtype, ('t', 'x', 'y'))
+                        difference[:]=predarray[k,:,:,:]-Ylabel_test0[k, :, :, :, 0]
+                    file.close()
+                else :
+                    path = "%s_%s" % (self.name, self.specifications) + "groupless"
+
+                    file = nc.Dataset(config.result_fold + path + '.nc', mode='w')
+                    file.createDimension("x", size=50)
+                    file.createDimension("y", size=50)
+                    file.createDimension("t", size=20)
+                    for k in range(predarray.shape[0]):
+                        label = file.createVariable("label_thk" + str(k), Ylabel_test0.dtype,
+                                                    ('t', 'x', 'y'))
+                        label[:] = Ylabel_test0[k, :, :, :, 0]
+                        prednc = file.createVariable("pred_thk" + str(k), predarray.dtype, ('t', 'x', 'y'))
+                        prednc[:] = predarray[k, :, :, :]
+                        difference = file.createVariable("diff_thk" + str(k), predarray.dtype,
+                                                         ('t', 'x', 'y'))
+                        difference[:] = predarray[k, :, :, :] - Ylabel_test0[k, :, :, :, 0]
+                    file.close()
 
     def save(self, checkpoint_dir, step, config):
         model_name = "IceDL.model"
