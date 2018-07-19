@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="8c6fb871-0a80-41d0-bb8f-6019134b3fed" name="sgees018.geo.vuw.ac.nz" url="http://sgees018.geo.vuw.ac.nz">
+        <fileTransfer host="sgees018.geo.vuw.ac.nz" port="22" privateKey="$USER_HOME$/.ssh/id_rsa" rootFolder="/Users/home/leguilma" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

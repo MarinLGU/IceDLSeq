@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="sgees018.geo.vuw.ac.nz">
+    <serverData>
+      <paths name="sgees018.geo.vuw.ac.nz">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/Documents/Antarctic Research Centre/IceDLSeq" local="$PROJECT_DIR$" web="/Documents/Antarctic Research Centre/IceDLSeq" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
