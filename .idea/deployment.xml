@@ -10,6 +10,7 @@
           <excludedPaths>
             <excludedPath path="/Documents/Antarctic Research Centre/IceDLSeq/checkpoint" />
             <excludedPath path="/Documents/Antarctic Research Centre/IceDLSeq/DSManagement" />
+            <excludedPath local="true" path="/Documents/Antarctic Research Centre/IceDLSeq/analyse.py" />
           </excludedPaths>
         </serverdata>
       </paths>

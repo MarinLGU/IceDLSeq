@@ -42,16 +42,19 @@ class IceDL(object):
         self.Ylabel = tf.placeholder(tf.float32,
                                      [None, self.temporal_depth, self.image_width, self.image_height, 1], name='Ylabel')
         self.pred, self.name = self.model_function(self.X)
-
-        # self.loss = tf.losses.absolute_difference(self.Ylabel[:,:,:,:,0], self.pred[:,:,:,:,0])
-        # self.loss = tf.losses.mean_squared_error(self.Ylabel[:,:,:,:,0], self.pred[:,:,:,:,0])
+        self.pred_aboveSL=tf.where(self.X[:,:,:,:,-1]>tf.zeros_like(self.X[:,:,:,:,-1]), self.pred[:,:,:,:,-1], tf.zeros_like(self.pred[:,:,:,:,-1]))
+        self.label_aboveSL=tf.where(self.X[:,:,:,:,-1]>tf.zeros_like(self.X[:,:,:,:,-1]), self.Ylabel[:,:,:,:,-1], tf.zeros_like(self.pred[:,:,:,:,-1]))
+        #self.loss = tf.losses.absolute_difference(tf.abs(self.Ylabel-self.Ylabel[:,0]), tf.abs(self.pred-self.Ylabel[:,0]))
         #self.loss = tf.losses.mean_squared_error(tf.log1p(self.Ylabel), tf.log1pself.pred)
-        self.loss = tf.losses.absolute_difference(tf.log1p(10*self.Ylabel), tf.log1p(10*self.pred))
+        #self.loss = tf.losses.mean_squared_error(self.Ylabel, self.pred)
+        self.loss = tf.losses.absolute_difference(self.Ylabel, self.pred)
+        #self.loss = tf.losses.absolute_difference(tf.log1p(10*self.Ylabel), tf.log1p(10*self.pred))
+        #self.loss=tf.losses.absolute_difference(self.Ylabel, self.pred)*tf.losses.absolute_difference(self.pred_aboveSL, self.label_aboveSL)
+        #self.loss = tf.losses.mean_squared_error(self.Ylabel, self.pred) * tf.losses.mean_squared_error(self.pred_aboveSL, self.label_aboveSL)
 
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
 
-        self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss,
-                                                                            global_step=self.global_step)
+        self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, global_step=self.global_step)
 
         tf.add_to_collection('global_step', self.global_step)
         self.saver = tf.train.Saver()
@@ -179,9 +182,9 @@ class IceDL(object):
             if config.save_netcdf:
                 if config.make_group :
                     # for k in range(predarray.shape[0]):
-                    path = "%s_%s"% (self.name, self.specifications)
+                    path = "%s_%s_%i"% (self.name, self.specifications, self.batch_size)
 
-                    file = nc.Dataset(config.result_fold + path + '.nc', mode='w')
+                    file = nc.Dataset(config.result_fold + path +'.nc', mode='w')
                     file.createDimension("x", size=50)
                     file.createDimension("y", size=50)
                     file.createDimension("t", size=20)
@@ -194,21 +197,36 @@ class IceDL(object):
                         difference[:]=predarray[k,:,:,:]-Ylabel_test0[k, :, :, :, 0]
                     file.close()
                 else :
-                    path = "%s_%s" % (self.name, self.specifications) + "groupless"
+                    path = "%s_%s_%i" % (self.name, self.specifications, self.batch_size) + "groupless"
 
-                    file = nc.Dataset(config.result_fold + path + '.nc', mode='w')
+                    file = nc.Dataset(config.result_fold + path +'.nc', mode='w')
                     file.createDimension("x", size=50)
                     file.createDimension("y", size=50)
                     file.createDimension("t", size=20)
-                    for k in range(predarray.shape[0]):
-                        label = file.createVariable("label_thk" + str(k), Ylabel_test0.dtype,
-                                                    ('t', 'x', 'y'))
-                        label[:] = Ylabel_test0[k, :, :, :, 0]
-                        prednc = file.createVariable("pred_thk" + str(k), predarray.dtype, ('t', 'x', 'y'))
-                        prednc[:] = predarray[k, :, :, :]
-                        difference = file.createVariable("diff_thk" + str(k), predarray.dtype,
-                                                         ('t', 'x', 'y'))
-                        difference[:] = predarray[k, :, :, :] - Ylabel_test0[k, :, :, :, 0]
+                    namelist=open('./dataset/name_test2.txt').readlines()
+                    if config.recover_names :
+                        for k in range(predarray.shape[0]):
+                            print(namelist[k])
+                            print("labelname_thk" + namelist[k])
+                            print(type(namelist[k]))
+                            label = file.createVariable("labelname_thk" + str(int(namelist[k])), Ylabel_test0.dtype,
+                                                        ('t', 'x', 'y'))
+                            label[:] = Ylabel_test0[k, :, :, :, 0]
+                            prednc = file.createVariable("predname_thk" + str(int(namelist[k])), predarray.dtype, ('t', 'x', 'y'))
+                            prednc[:] = predarray[k, :, :, :]
+                            difference = file.createVariable("diffname_thk" + str(int(namelist[k])), predarray.dtype,
+                                                             ('t', 'x', 'y'))
+                            difference[:] = predarray[k, :, :, :] - Ylabel_test0[k, :, :, :, 0]
+                    else:
+                        for k in range(predarray.shape[0]):
+                            label = file.createVariable("label_thk" + str(k), Ylabel_test0.dtype,
+                                                        ('t', 'x', 'y'))
+                            label[:] = Ylabel_test0[k, :, :, :, 0]
+                            prednc = file.createVariable("pred_thk" + str(k), predarray.dtype, ('t', 'x', 'y'))
+                            prednc[:] = predarray[k, :, :, :]
+                            difference = file.createVariable("diff_thk" + str(k), predarray.dtype,
+                                                             ('t', 'x', 'y'))
+                            difference[:] = predarray[k, :, :, :] - Ylabel_test0[k, :, :, :, 0]
                     file.close()
 
     def save(self, checkpoint_dir, step, config):

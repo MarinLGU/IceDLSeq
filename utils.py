@@ -44,7 +44,7 @@ def scaler(X_train0, X_test0, Ylabel_train0, Ylabel_test0):
     airtempscaler = MinMaxScaler((0, 1)).fit(concat0[:, :, :, :, 0].max(axis=(0, 1)))
     prcptnscaler = MinMaxScaler((0, 1)).fit(concat0[:, :, :, :, 1].max(axis=(0, 1)))
     ocnscaler = MinMaxScaler((0, 1)).fit(concat0[:, :, :, :, 2].max(axis=(0, 1)))
-    topgscaler = MinMaxScaler((0, 1)).fit(concat0[:, :, :, :, 3].max(axis=(0, 1)))
+    topgscaler = MinMaxScaler((-1, 1)).fit(concat0[:, :, :, :, 3].max(axis=(0, 1)))
     for b in range(X_test.shape[0]):
         for t in range(X_test.shape[1]):
             for c in range(X_test.shape[-1]):
